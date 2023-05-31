@@ -1,7 +1,7 @@
 package com.example.hrproject.response;
 
 import com.example.hrproject.domain.dto.DepartmentDto;
-import com.example.hrproject.domain.dto.EmployeeListDto;
+import com.example.hrproject.domain.dto.EmployeeDto;
 import com.example.hrproject.domain.dto.EmployeeManagerDto;
 import com.example.hrproject.domain.dto.JobDto;
 import com.example.hrproject.domain.entity.Employee;
@@ -31,7 +31,7 @@ public class EmployeeResponse {
     private BigDecimal salary;
     private BigDecimal commissionPct;
     private EmployeeManagerDto manager;
-    private List<EmployeeListDto> employeeList = new ArrayList<>();
+    private List<EmployeeDto> employeeList = new ArrayList<>();
     private DepartmentDto department;
 
     public static EmployeeResponse of(Employee e) {
@@ -46,7 +46,7 @@ public class EmployeeResponse {
         response.salary = e.getSalary();
         response.commissionPct = e.getCommissionPct();
         response.manager = EmployeeManagerDto.of(e.getManager());
-        response.employeeList = e.getEmployeeList().stream().map(EmployeeListDto::of).collect(Collectors.toList());
+        response.employeeList = e.getEmployeeList().stream().map(EmployeeDto::of).collect(Collectors.toList());
         response.department = DepartmentDto.of(e.getDepartment());
         return response;
     }
