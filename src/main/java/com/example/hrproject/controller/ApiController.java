@@ -6,6 +6,8 @@ import com.example.hrproject.repository.query.DepartmentQueryRepository;
 import com.example.hrproject.response.*;
 import com.example.hrproject.service.DepartmentService;
 import com.example.hrproject.service.EmployeeService;
+import com.example.hrproject.trace.TraceStatus;
+import com.example.hrproject.trace.logtrace.LogTrace;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,28 +20,73 @@ public class ApiController {
 
     private final EmployeeService employeeService;
     private final DepartmentService departmentService;
+    private final LogTrace trace;
 
-    @GetMapping("/employee/{employeeId}")
+    @GetMapping("/employees/{employeeId}")
     public Response<EmployeeResponse> findEmployee(@PathVariable Integer employeeId) {
-        return Response.success(employeeService.findEmployee(employeeId));
+        Response<EmployeeResponse> success;
+        TraceStatus status = null;
+
+        try {
+            status = trace.begin("ApiController.findEmployee()");
+            success = Response.success(employeeService.findEmployee(employeeId));
+        } catch (Exception e) {
+            trace.exception(status, e);
+            throw e;
+        }
+
+        trace.end(status);
+        return success;
     }
 
-    @GetMapping("/employee/{employeeId}/history")
+    @GetMapping("/employees/{employeeId}/history")
     public Response<List<JobHistoryResponse>> findHistory(@PathVariable Integer employeeId) {
-        return Response.success(employeeService.findHistory(employeeId));
+        Response<List<JobHistoryResponse>> success;
+        TraceStatus status = null;
+
+        try {
+            status = trace.begin("ApiController.findHistory()");
+            success = Response.success(employeeService.findHistory(employeeId));
+        } catch (Exception e) {
+            trace.exception(status, e);
+            throw e;
+        }
+
+        trace.end(status);
+        return success;
     }
 
     @GetMapping("/departments")
     public Response<List<DepartmentResponse>> findDepartmentWithLocation() {
-        return Response.success(departmentService.findDepartmentWithLocation());
+        Response<List<DepartmentResponse>> success;
+        TraceStatus status = null;
+        try {
+            status = trace.begin("ApiController.findDepartmentWithLocation()");
+            success = Response.success(departmentService.findDepartmentWithLocation());
+        } catch (Exception e) {
+            trace.exception(status, e);
+            throw e;
+        }
+
+        trace.end(status);
+        return success;
     }
 
     @PatchMapping("/departments")
     public Response<Void> departmentUpdateSalary(@RequestBody DepartmentUpdateRequest request) {
-        if (request.getPercent() == 0) {
-            throw new HrApplicationException(ErrorCode.BAD_REQUEST_ERROR, "Server received bad request");
+        TraceStatus status = null;
+        try {
+            status = trace.begin("ApiController.departmentUpdateSalary()");
+            if (request.getPercent() == 0) {
+                throw new HrApplicationException(ErrorCode.BAD_REQUEST_ERROR, "Server received bad request");
+            }
+            departmentService.updateSalaryInDepartment(request.getDepartmentId(), request.getPercent() / 100 + 1);
+        } catch (Exception e) {
+            trace.exception(status, e);
+            throw e;
         }
-        departmentService.updateSalaryInDepartment(request.getDepartmentId(), request.getPercent()/100+1);
+
+        trace.end(status);
         return Response.success();
     }
 }
